@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt2->close();
                 }
                 
-                $success = 'Account created successfully! <a href="login.php">Click here to login</a>.';
+                $success = 'Account created successfully! Redirecting to login...';
             } else {
                 $error = 'Error creating account. Please try again.';
             }
@@ -90,7 +90,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
             
             <?php if ($success): ?>
-                <div class="alert alert-success"><?php echo $success; ?></div>
+                <div class="alert alert-success">
+                    <?php echo $success; ?>
+                    <script>
+                        setTimeout(function() {
+                            window.location.href = 'login.php';
+                        }, 2000);
+                    </script>
+                </div>
             <?php endif; ?>
             
             <form method="POST" action="signup.php" class="auth-form">

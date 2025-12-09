@@ -18,17 +18,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $message = 'Course code and name are required.';
         $message_type = 'error';
     } else {
-        $stmt = $conn->prepare("INSERT INTO courses (course_code, course_name, description, credit_hours, faculty_id) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssii", $course_code, $course_name, $description, $credit_hours, $faculty_id);
+        // Check if course code already exists
+        $check_stmt = $conn->prepare("SELECT course_id FROM courses WHERE course_code = ?");
+        $check_stmt->bind_param("s", $course_code);
+        $check_stmt->execute();
+        $result = $check_stmt->get_result();
         
-        if ($stmt->execute()) {
-            $message = 'Course created successfully!';
-            $message_type = 'success';
-        } else {
-            $message = 'Error creating course. Course code might already exist.';
+        if ($result->num_rows > 0) {
+            $message = 'Course code "' . htmlspecialchars($course_code) . '" already exists. Please use a different course code.';
             $message_type = 'error';
+            $check_stmt->close();
+        } else {
+            $check_stmt->close();
+            
+            $stmt = $conn->prepare("INSERT INTO courses (course_code, course_name, description, credit_hours, faculty_id) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssii", $course_code, $course_name, $description, $credit_hours, $faculty_id);
+            
+            if ($stmt->execute()) {
+                $message = 'Course created successfully!';
+                $message_type = 'success';
+            } else {
+                $message = 'Error creating course: ' . $stmt->error;
+                $message_type = 'error';
+            }
+            $stmt->close();
         }
-        $stmt->close();
     }
 }
 
@@ -49,21 +63,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     if ($result->num_rows === 0) {
         $message = 'Course not found or you do not have permission to edit it.';
         $message_type = 'error';
+        $stmt->close();
     } elseif (empty($course_code) || empty($course_name)) {
         $message = 'Course code and name are required.';
         $message_type = 'error';
-    } else {
-        $stmt = $conn->prepare("UPDATE courses SET course_code = ?, course_name = ?, description = ?, credit_hours = ? WHERE course_id = ? AND faculty_id = ?");
-        $stmt->bind_param("sssiii", $course_code, $course_name, $description, $credit_hours, $course_id, $faculty_id);
-        
-        if ($stmt->execute()) {
-            $message = 'Course updated successfully!';
-            $message_type = 'success';
-        } else {
-            $message = 'Error updating course. Course code might already exist.';
-            $message_type = 'error';
-        }
         $stmt->close();
+    } else {
+        $stmt->close();
+        
+        // Check if course code already exists (excluding current course)
+        $check_stmt = $conn->prepare("SELECT course_id FROM courses WHERE course_code = ? AND course_id != ?");
+        $check_stmt->bind_param("si", $course_code, $course_id);
+        $check_stmt->execute();
+        $check_result = $check_stmt->get_result();
+        
+        if ($check_result->num_rows > 0) {
+            $message = 'Course code "' . htmlspecialchars($course_code) . '" already exists. Please use a different course code.';
+            $message_type = 'error';
+            $check_stmt->close();
+        } else {
+            $check_stmt->close();
+            
+            $stmt = $conn->prepare("UPDATE courses SET course_code = ?, course_name = ?, description = ?, credit_hours = ? WHERE course_id = ? AND faculty_id = ?");
+            $stmt->bind_param("sssiii", $course_code, $course_name, $description, $credit_hours, $course_id, $faculty_id);
+            
+            if ($stmt->execute()) {
+                $message = 'Course updated successfully!';
+                $message_type = 'success';
+            } else {
+                $message = 'Error updating course: ' . $stmt->error;
+                $message_type = 'error';
+            }
+            $stmt->close();
+        }
     }
 }
 

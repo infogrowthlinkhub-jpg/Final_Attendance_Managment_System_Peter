@@ -1,3 +1,6 @@
+# Production .htaccess - Enhanced Security
+# Rename this to .htaccess after deployment
+
 # Prevent directory listing
 Options -Indexes
 
@@ -5,7 +8,7 @@ Options -Indexes
 DirectoryIndex index.php index.html
 
 # Protect sensitive files
-<FilesMatch "\.(htaccess|htpasswd|ini|log|sh|sql)$">
+<FilesMatch "\.(htaccess|htpasswd|ini|log|sh|sql|md)$">
     Order Allow,Deny
     Deny from all
 </FilesMatch>
@@ -16,21 +19,24 @@ DirectoryIndex index.php index.html
     Deny from all
 </Files>
 
-# Protect init_db.php after setup (uncomment after database is initialized)
-# <Files "init_db.php">
-#     Order Allow,Deny
-#     Deny from all
-# </Files>
+# Protect init_db.php after setup
+<Files "init_db.php">
+    Order Allow,Deny
+    Deny from all
+</Files>
 
-# Error pages (optional - remove if not needed)
-# ErrorDocument 404 /404.php
-# ErrorDocument 403 /403.php
+# Protect example files
+<FilesMatch "\.example$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
 
 # Security headers
 <IfModule mod_headers.c>
     Header set X-Content-Type-Options "nosniff"
     Header set X-Frame-Options "SAMEORIGIN"
     Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
 
 # Prevent access to includes directory
@@ -42,5 +48,15 @@ DirectoryIndex index.php index.html
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^$ index.php [L]
+    
+    # Force HTTPS (uncomment if you have SSL)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# PHP Security Settings (if allowed)
+<IfModule mod_php7.c>
+    php_flag display_errors Off
+    php_flag log_errors On
 </IfModule>
 
