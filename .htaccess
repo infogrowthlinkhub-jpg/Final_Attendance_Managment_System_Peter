@@ -1,0 +1,46 @@
+# Prevent directory listing
+Options -Indexes
+
+# Set default index file
+DirectoryIndex index.php index.html
+
+# Protect sensitive files
+<FilesMatch "\.(htaccess|htpasswd|ini|log|sh|sql)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Protect config files
+<Files "config.php">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Protect init_db.php after setup (optional - comment out during initial setup)
+# <Files "init_db.php">
+#     Order Allow,Deny
+#     Deny from all
+# </Files>
+
+# Error pages (optional - remove if not needed)
+# ErrorDocument 404 /404.php
+# ErrorDocument 403 /403.php
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# Prevent access to includes directory
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^includes/ - [F,L]
+    
+    # Redirect root to index.php if accessing directory
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^$ index.php [L]
+</IfModule>
+
