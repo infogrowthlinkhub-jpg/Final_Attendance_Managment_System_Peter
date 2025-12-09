@@ -1,9 +1,9 @@
 <?php
 // Database configuration
 define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'attendance_management');
+define('DB_USER', 'peter.mayen');
+define('DB_PASS', 'Machuek');
+define('DB_NAME', 'webtech_2025a_peter_mayen');
 
 // Start session
 session_start();
