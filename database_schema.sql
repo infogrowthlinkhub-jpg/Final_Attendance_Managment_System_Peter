@@ -1,17 +1,15 @@
 -- ============================================================================
 -- Attendance Management System - Unified Database Schema
--- Database: webtech_2025a_peter_mayen
 -- ============================================================================
--- This is the SINGLE unified database schema file for the entire system.
--- Use this file to manually create tables in phpMyAdmin if auto-creation fails.
+-- IMPORTANT:
+-- Do NOT include "CREATE DATABASE" or "USE <database>" because you
+-- don't have permission. Simply select your database in phpMyAdmin first.
 -- ============================================================================
 
--- Disable foreign key checks temporarily to allow table creation in any order
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ============================================================================
 -- Users Table
--- Stores all user accounts (students, faculty, admin)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS users (
     user_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -28,7 +26,6 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- ============================================================================
 -- Students Table
--- Links to users table for students only
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS students (
     student_id INT PRIMARY KEY,
@@ -37,7 +34,6 @@ CREATE TABLE IF NOT EXISTS students (
 
 -- ============================================================================
 -- Faculty Table
--- Links to users table for faculty only
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS faculty (
     faculty_id INT PRIMARY KEY,
@@ -46,7 +42,6 @@ CREATE TABLE IF NOT EXISTS faculty (
 
 -- ============================================================================
 -- Courses Table
--- Stores course information, each course is taught by one faculty member
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS courses (
     course_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -63,7 +58,6 @@ CREATE TABLE IF NOT EXISTS courses (
 
 -- ============================================================================
 -- Course Student List Table
--- Many-to-many relationship: students enrolled in courses
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS course_student_list (
     course_id INT NOT NULL,
@@ -78,7 +72,6 @@ CREATE TABLE IF NOT EXISTS course_student_list (
 
 -- ============================================================================
 -- Sessions Table
--- Stores class sessions for each course
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS sessions (
     session_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -97,7 +90,6 @@ CREATE TABLE IF NOT EXISTS sessions (
 
 -- ============================================================================
 -- Attendance Table
--- Tracks student attendance for each session
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS attendance (
     attendance_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -115,7 +107,6 @@ CREATE TABLE IF NOT EXISTS attendance (
     INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================================================
