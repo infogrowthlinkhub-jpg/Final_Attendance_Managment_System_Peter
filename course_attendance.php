@@ -3,6 +3,12 @@ require_once 'config.php';
 requireStudent();
 
 $conn = getDBConnection();
+
+if ($conn === false) {
+    global $db_error;
+    die("Database connection failed. Please contact the administrator.");
+}
+
 $student_id = $_SESSION['user_id'];
 $course_id = isset($_GET['course_id']) ? intval($_GET['course_id']) : 0;
 

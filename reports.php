@@ -3,6 +3,12 @@ require_once 'config.php';
 requireFaculty();
 
 $conn = getDBConnection();
+
+if ($conn === false) {
+    global $db_error;
+    die("Database connection failed. Please contact the administrator.");
+}
+
 $faculty_id = $_SESSION['user_id'];
 
 // Get faculty's courses

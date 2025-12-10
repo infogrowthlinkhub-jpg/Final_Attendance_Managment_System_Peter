@@ -23,7 +23,7 @@ function getDB(){
         return [
             'host' => 'localhost',
             'user' => 'root',
-            'pass' => '',
+            'pass' => 'Machuek',
             'name' => 'webtech_2025a_peter_mayen'
         ];
     }
@@ -296,6 +296,47 @@ function requireFaculty(){
         header('Location: dashboard.php');
         exit();
     }
+    
+    // Ensure faculty record exists in faculty table
+    $conn = getDBConnection();
+    if($conn !== false){
+        $faculty_id = $_SESSION['user_id'];
+        
+        // First verify the user exists in users table
+        $check_user = $conn->prepare("SELECT user_id, role FROM users WHERE user_id = ? AND role = 'faculty'");
+        $check_user->bind_param("i", $faculty_id);
+        $check_user->execute();
+        $user_result = $check_user->get_result();
+        
+        if($user_result->num_rows == 0){
+            // User doesn't exist or role doesn't match - invalid session
+            $check_user->close();
+            $conn->close();
+            session_destroy();
+            header('Location: login.php');
+            exit();
+        }
+        $check_user->close();
+        
+        // Now check if faculty record exists
+        $check = $conn->prepare("SELECT faculty_id FROM faculty WHERE faculty_id = ?");
+        $check->bind_param("i", $faculty_id);
+        $check->execute();
+        $result = $check->get_result();
+        
+        if($result->num_rows == 0){
+            // Faculty record missing, create it (user exists, so this should work)
+            $insert = $conn->prepare("INSERT INTO faculty (faculty_id) VALUES (?)");
+            $insert->bind_param("i", $faculty_id);
+            
+            if(!$insert->execute()){
+                error_log("Failed to create faculty record for user_id $faculty_id: " . $insert->error);
+            }
+            $insert->close();
+        }
+        $check->close();
+        $conn->close();
+    }
 }
 
 // Redirect if not student
@@ -304,6 +345,47 @@ function requireStudent(){
     if(!hasRole('student')){
         header('Location: dashboard.php');
         exit();
+    }
+    
+    // Ensure student record exists in students table
+    $conn = getDBConnection();
+    if($conn !== false){
+        $student_id = $_SESSION['user_id'];
+        
+        // First verify the user exists in users table
+        $check_user = $conn->prepare("SELECT user_id, role FROM users WHERE user_id = ? AND role = 'student'");
+        $check_user->bind_param("i", $student_id);
+        $check_user->execute();
+        $user_result = $check_user->get_result();
+        
+        if($user_result->num_rows == 0){
+            // User doesn't exist or role doesn't match - invalid session
+            $check_user->close();
+            $conn->close();
+            session_destroy();
+            header('Location: login.php');
+            exit();
+        }
+        $check_user->close();
+        
+        // Now check if student record exists
+        $check = $conn->prepare("SELECT student_id FROM students WHERE student_id = ?");
+        $check->bind_param("i", $student_id);
+        $check->execute();
+        $result = $check->get_result();
+        
+        if($result->num_rows == 0){
+            // Student record missing, create it (user exists, so this should work)
+            $insert = $conn->prepare("INSERT INTO students (student_id) VALUES (?)");
+            $insert->bind_param("i", $student_id);
+            
+            if(!$insert->execute()){
+                error_log("Failed to create student record for user_id $student_id: " . $insert->error);
+            }
+            $insert->close();
+        }
+        $check->close();
+        $conn->close();
     }
 }
 

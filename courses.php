@@ -3,9 +3,50 @@ require_once 'config.php';
 requireFaculty();
 
 $conn = getDBConnection();
+
+if ($conn === false) {
+    global $db_error;
+    die("Database connection failed. Please contact the administrator.");
+}
+
 $faculty_id = $_SESSION['user_id'];
 $message = '';
 $message_type = '';
+
+// Note: requireFaculty() already ensures the faculty record exists, but we'll double-check here
+// Verify user exists and is faculty
+$check_user = $conn->prepare("SELECT user_id FROM users WHERE user_id = ? AND role = 'faculty'");
+$check_user->bind_param("i", $faculty_id);
+$check_user->execute();
+$user_result = $check_user->get_result();
+
+if ($user_result->num_rows == 0) {
+    $check_user->close();
+    $conn->close();
+    session_destroy();
+    header('Location: login.php');
+    exit();
+}
+$check_user->close();
+
+// Ensure faculty record exists (requireFaculty should have done this, but double-check)
+$check_faculty = $conn->prepare("SELECT faculty_id FROM faculty WHERE faculty_id = ?");
+$check_faculty->bind_param("i", $faculty_id);
+$check_faculty->execute();
+$faculty_result = $check_faculty->get_result();
+
+if ($faculty_result->num_rows == 0) {
+    // Faculty record doesn't exist, create it (user exists, so this should work)
+    $insert_faculty = $conn->prepare("INSERT INTO faculty (faculty_id) VALUES (?)");
+    $insert_faculty->bind_param("i", $faculty_id);
+    
+    if (!$insert_faculty->execute()) {
+        error_log("Failed to create faculty record: " . $insert_faculty->error);
+        die("Error: Your faculty record could not be created. Please contact support.");
+    }
+    $insert_faculty->close();
+}
+$check_faculty->close();
 
 // Handle course creation
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create') {
