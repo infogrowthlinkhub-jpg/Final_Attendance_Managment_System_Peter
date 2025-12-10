@@ -18,19 +18,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($email) || empty($password)) {
         $error = "Please fill in all fields.";
     } else {
-
         $conn = getDBConnection();
-
-        // Prepare query
-        $stmt = $conn->prepare("
-            SELECT user_id, first_name, last_name, email, password_hash, role 
-            FROM users 
-            WHERE email = ?
-        ");
-
-        if (!$stmt) {
-            $error = "Database error: ".$conn->error;
+        
+        if($conn === false){
+            global $db_error;
+            $error = "Database connection failed. Please try again later.";
+            error_log("Login DB error: " . ($db_error ?? 'Unknown error'));
         } else {
+            // Prepare query
+            $stmt = $conn->prepare("
+                SELECT user_id, first_name, last_name, email, password_hash, role 
+                FROM users 
+                WHERE email = ?
+            ");
+
+            if (!$stmt) {
+                $error = "Database error: " . $conn->error;
+                error_log("Login prepare error: " . $conn->error);
+            } else {
 
             $stmt->bind_param("s", $email);
             $stmt->execute();
@@ -61,10 +66,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $error = "Invalid email or password.";
             }
 
-            $stmt->close();
+                $stmt->close();
+            }
+            
+            if($conn) $conn->close();
         }
-
-        $conn->close();
     }
 }
 
