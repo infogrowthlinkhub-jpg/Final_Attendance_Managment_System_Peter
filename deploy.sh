@@ -38,7 +38,7 @@ echo "Uploading includes..."
 scp -P $PORT -r includes/ $USER@$SERVER:~/$REMOTE_DIR/
 
 echo "Uploading other files..."
-scp -P $PORT .htaccess attendance_schema.sql $USER@$SERVER:~/$REMOTE_DIR/
+scp -P $PORT .htaccess database_schema.sql $USER@$SERVER:~/$REMOTE_DIR/
 
 echo ""
 echo "Step 4: Setting file permissions..."

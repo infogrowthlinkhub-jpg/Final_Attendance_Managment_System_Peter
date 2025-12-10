@@ -9,6 +9,12 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || !isset($_SESSIO
 }
 
 $conn = getDBConnection();
+
+if ($conn === false) {
+    global $db_error;
+    die("Database connection failed. Please contact the administrator.");
+}
+
 $user_id = $_SESSION['user_id'];
 $role = $_SESSION['role'];
 $name = $_SESSION['name'];
